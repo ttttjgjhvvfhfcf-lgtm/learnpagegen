@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="de" data-palette="amber" data-slug="kuerzel">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KÜRZEL — Thema der Lernseite</title>
+<!--
+  VORLAGE für Lernseiten (Anleitung: CLAUDE.md im Repo-Root).
+  • Eine einzige, in sich geschlossene HTML-Datei (CSS + JS inline, keine Build-Schritte).
+  • Alles mit data-demo ist Beispielinhalt und MUSS ersetzt oder gelöscht werden.
+  • Platzhalter, die ersetzt werden müssen: KÜRZEL (Titel, Toolbar, Lernmodus), data-slug; data-palette nur ändern, wenn gewünscht.
+  • TOC (Inhaltsverzeichnis) und Scroll-Spy entstehen automatisch aus <section id> mit .section-header.
+-->
+<script>
+/* Dark-Mode vor dem ersten Paint setzen (kein Flackern). Key: <data-slug>-dark */
+(function () {
+  try {
+    var r = document.documentElement, v = localStorage.getItem((r.dataset.slug || 'lernseite') + '-dark');
+    if (v === null) v = matchMedia('(prefers-color-scheme: dark)').matches ? '1' : '0';
+    if (v === '1') r.classList.add('dark');
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   1. DESIGN-TOKENS  (Standard-Palette: amber = MET-Look)
+═══════════════════════════════════════════════ */
+:root {
+  --primary:        #d97706;   /* Deko, große Überschriften, Balken */
+  --primary-strong: #b45309;   /* kleiner Text + Buttons (Kontrast ≥ 4.5:1) */
+  --primary-light:  #f97316;
+  --on-primary:     #ffffff;
+  --accent:         #dc2626;
+  --bg:             #fef3e2;
+  --paper:          #fffbf2;   /* Fläche für SVG-Diagramme (bleibt auch im Dark-Mode hell) */
+  --tint-1:         #fef3c7;   /* Hinweisboxen / Tabellenkopf */
+  --tint-2:         #fef08a;
+  --tint-border:    #fcd34d;
+  --tint-text:      #92400e;
+  --hdr-1: #a16207; --hdr-2: #7c2d12; --hdr-3: #991b1b;
+  --glow-1: rgba(217,119,6,.07); --glow-2: rgba(220,38,38,.06); --dot: rgba(107,114,128,.22);
+
+  --card:     #ffffff;
+  --card-alt: #faf9f7;
+  --text:     #1f2937;
+  --muted:    #5b6575;
+  --border:   #e5e7eb;
+
+  /* Bedeutungsfarben (Rahmen, Titel) */
+  --c-orange:#f97316; --c-red:#dc2626; --c-blue:#2563eb; --c-green:#16a34a;
+  --c-purple:#8b5cf6; --c-sky:#0ea5e9; --c-brown:#92400e;
+  /* Hinweisflächen */
+  --ok-bg:#dcfce7;   --ok-text:#166534;   --ok-border:#86efac;
+  --info-bg:#eff6ff; --info-bg-2:#dbeafe; --info-text:#1e40af; --info-border:#93c5fd;
+  --danger-bg:rgba(220,38,38,.08); --danger-text:#991b1b; --danger-border:#dc2626;
+  --purple-bg:#ede9fe; --purple-text:#5b21b6;
+
+  --shadow-xs: 0 1px 2px rgba(31,41,55,.05);
+  --shadow-sm: 0 2px 8px rgba(217,119,6,.07), 0 1px 3px rgba(217,119,6,.04);
+  --shadow-md: 0 6px 24px rgba(217,119,6,.11), 0 2px 8px rgba(217,119,6,.05);
+  --radius: 16px; --radius-sm: 10px;
+  --dur: .18s; --ease: cubic-bezier(.4,0,.2,1);
+}
+
+/* Weitere Paletten — nur setzen, wenn gewünscht: <html data-palette="blue|green|violet"> */
+:root[data-palette="blue"]   { --primary:#2563eb; --primary-strong:#1d4ed8; --primary-light:#3b82f6; --accent:#7c3aed; --bg:#eff6ff; --paper:#f8faff;
+  --tint-1:#dbeafe; --tint-2:#bfdbfe; --tint-border:#93c5fd; --tint-text:#1e3a8a; --hdr-1:#1d4ed8; --hdr-2:#1e3a8a; --hdr-3:#4c1d95;
+  --glow-1:rgba(37,99,235,.07); --glow-2:rgba(124,58,237,.06); --shadow-sm:0 2px 8px rgba(37,99,235,.07),0 1px 3px rgba(37,99,235,.04); --shadow-md:0 6px 24px rgba(37,99,235,.11),0 2px 8px rgba(37,99,235,.05); }
+:root[data-palette="green"]  { --primary:#059669; --primary-strong:#047857; --primary-light:#10b981; --accent:#0d9488; --bg:#ecfdf5; --paper:#f6fffa;
+  --tint-1:#d1fae5; --tint-2:#a7f3d0; --tint-border:#6ee7b7; --tint-text:#065f46; --hdr-1:#047857; --hdr-2:#065f46; --hdr-3:#134e4a;
+  --glow-1:rgba(5,150,105,.07); --glow-2:rgba(13,148,136,.06); --shadow-sm:0 2px 8px rgba(5,150,105,.07),0 1px 3px rgba(5,150,105,.04); --shadow-md:0 6px 24px rgba(5,150,105,.11),0 2px 8px rgba(5,150,105,.05); }
+:root[data-palette="violet"] { --primary:#7c3aed; --primary-strong:#6d28d9; --primary-light:#8b5cf6; --accent:#db2777; --bg:#f5f3ff; --paper:#faf8ff;
+  --tint-1:#ede9fe; --tint-2:#ddd6fe; --tint-border:#c4b5fd; --tint-text:#4c1d95; --hdr-1:#6d28d9; --hdr-2:#4c1d95; --hdr-3:#831843;
+  --glow-1:rgba(124,58,237,.07); --glow-2:rgba(219,39,119,.06); --shadow-sm:0 2px 8px rgba(124,58,237,.07),0 1px 3px rgba(124,58,237,.04); --shadow-md:0 6px 24px rgba(124,58,237,.11),0 2px 8px rgba(124,58,237,.05); }
+
+/* Dark-Mode: überschreibt NUR Variablen — Komponenten bleiben unverändert */
+:root.dark {
+  color-scheme: dark;
+  --primary:#fbbf24; --primary-strong:#fbbf24; --primary-light:#f97316; --on-primary:#1c1917; --accent:#f87171;
+  --bg:#0f172a; --paper:#fffbf2;
+  --tint-1:#2d1f05; --tint-2:#3d2a06; --tint-border:#78350f; --tint-text:#fde68a;
+  --hdr-1:#1c0d01; --hdr-2:#3d1205; --hdr-3:#4b0c0c;
+  --glow-1:rgba(217,119,6,.05); --glow-2:rgba(220,38,38,.04); --dot:rgba(51,65,85,.6);
+  --card:#1e293b; --card-alt:#162033; --text:#e2e8f0; --muted:#94a3b8; --border:#334155;
+  --c-orange:#fb923c; --c-red:#f87171; --c-blue:#60a5fa; --c-green:#4ade80; --c-purple:#a78bfa; --c-sky:#38bdf8; --c-brown:#d6a26e;
+  --ok-bg:rgba(34,197,94,.14); --ok-text:#bbf7d0; --ok-border:#166534;
+  --info-bg:rgba(59,130,246,.12); --info-bg-2:rgba(59,130,246,.2); --info-text:#bfdbfe; --info-border:#1e40af;
+  --danger-bg:rgba(248,113,113,.12); --danger-text:#fecaca; --danger-border:#b91c1c;
+  --purple-bg:rgba(139,92,246,.16); --purple-text:#ddd6fe;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.3); --shadow-sm:0 2px 8px rgba(0,0,0,.28); --shadow-md:0 6px 24px rgba(0,0,0,.4);
+}
+:root[data-palette="blue"].dark   { --primary:#60a5fa; --primary-strong:#60a5fa; --primary-light:#3b82f6; --on-primary:#0b1220; --accent:#c4b5fd;
+  --tint-1:#10213f; --tint-2:#16305a; --tint-border:#1e40af; --tint-text:#bfdbfe; --hdr-1:#0b1636; --hdr-2:#172554; --hdr-3:#2e1065; --glow-1:rgba(37,99,235,.06); --glow-2:rgba(124,58,237,.05); }
+:root[data-palette="green"].dark  { --primary:#34d399; --primary-strong:#34d399; --primary-light:#10b981; --on-primary:#06150f; --accent:#5eead4;
+  --tint-1:#07261b; --tint-2:#0a3a29; --tint-border:#047857; --tint-text:#a7f3d0; --hdr-1:#022c22; --hdr-2:#064e3b; --hdr-3:#042f2e; --glow-1:rgba(5,150,105,.06); --glow-2:rgba(13,148,136,.05); }
+:root[data-palette="violet"].dark { --primary:#a78bfa; --primary-strong:#a78bfa; --primary-light:#8b5cf6; --on-primary:#120a24; --accent:#f472b6;
+  --tint-1:#1f1442; --tint-2:#2b1a5c; --tint-border:#6d28d9; --tint-text:#ddd6fe; --hdr-1:#1e1b4b; --hdr-2:#2e1065; --hdr-3:#500724; --glow-1:rgba(124,58,237,.06); --glow-2:rgba(219,39,119,.05); }
+
+/* ═══════════════════════════════════════════════
+   2. BASIS
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+html.learn-open { overflow: hidden; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 5% -5%, var(--glow-1) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 95% 105%, var(--glow-2) 0%, transparent 55%),
+    radial-gradient(circle, var(--dot) .85px, transparent .85px);
+  background-size: auto, auto, 22px 22px;
+  color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.57;
+  transition: background-color .25s, color .25s;
+}
+:focus-visible { outline: 2px solid var(--primary-strong); outline-offset: 2px; }
+sub, sup { line-height: 0; }
+code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .85em; background: var(--card-alt); border: 1px solid var(--border); padding: .05rem .35rem; border-radius: 4px; overflow-wrap: anywhere; }
+
+/* Lesefortschritt */
+#top-progress-bar { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--primary-light), var(--accent)); z-index: 9999; pointer-events: none; }
+
+/* ═══════════════════════════════════════════════
+   3. KOPF, TOOLBAR, BUTTONS
+═══════════════════════════════════════════════ */
+.hero { background: linear-gradient(135deg, var(--hdr-1) 0%, var(--hdr-2) 50%, var(--hdr-3) 100%); color: #fff; padding: 1.25rem 2.5rem 1.1rem; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 55% 75% at 0% 50%, rgba(255,255,255,.04) 0%, transparent 65%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+.hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); }
+.h-icon { position: absolute; right: 2.5rem; top: 50%; transform: translateY(-50%); font-size: 3.5rem; opacity: .08; user-select: none; line-height: 1; }
+.h-content { position: relative; }
+.h-badge { display: inline-flex; align-items: center; gap: .35rem; background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(8px); padding: .3rem .95rem; border-radius: 999px; font-size: .75rem; font-weight: 600; margin-bottom: .85rem; letter-spacing: .025em; }
+.hero h1 { font-size: 2.4rem; font-weight: 800; letter-spacing: -.75px; margin-bottom: .4rem; line-height: 1.15; }
+.hero p { font-size: .915rem; opacity: .75; }
+.h-motto { font-size: .9rem; font-style: italic; color: rgba(255,255,255,.78); margin-top: .8rem; }
+
+.toolbar { background: color-mix(in srgb, var(--card) 90%, transparent); backdrop-filter: blur(18px) saturate(1.8); border-bottom: 1px solid var(--border); padding: .55rem 1.75rem; display: flex; align-items: center; gap: .75rem; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 14px rgba(0,0,0,.05); }
+.toolbar-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; padding: .5rem 1rem; border-radius: 9px; border: 1px solid transparent; font: inherit; font-size: .84rem; font-weight: 500; cursor: pointer; transition: all var(--dur) var(--ease); white-space: nowrap; }
+.btn-sm { padding: .33rem .7rem; font-size: .78rem; }
+.btn-primary { background: var(--primary-strong); color: var(--on-primary); border-color: var(--primary-strong); box-shadow: var(--shadow-xs); }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-secondary { background: var(--card-alt); color: var(--text); border-color: var(--border); box-shadow: var(--shadow-xs); }
+.btn-secondary:hover { background: var(--border); }
+.btn-dm { margin-left: auto; font-size: 1.1rem; line-height: 1; }
+.btn-toc { display: none; }
+.btn[hidden] { display: none; }
+
+/* ═══════════════════════════════════════════════
+   4. LAYOUT + INHALTSVERZEICHNIS
+═══════════════════════════════════════════════ */
+.page-layout { display: flex; align-items: flex-start; gap: 2rem; max-width: 1160px; margin: 0 auto; padding: 0 1.25rem; }
+.main-content { flex: 1; min-width: 0; padding-bottom: 4rem; }
+.main-content > section { margin-top: 2.5rem; scroll-margin-top: 4.5rem; }
+
+.toc-sidebar { width: 215px; flex-shrink: 0; position: sticky; top: 3.6rem; max-height: calc(100vh - 4.4rem); overflow-y: auto; padding: 1.25rem 0 2rem; margin-top: 1.75rem; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.toc-head { font-size: .69rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 .75rem .5rem; border-bottom: 1px solid var(--border); margin-bottom: .35rem; }
+.toc-item { display: block; padding: .42rem .75rem; font-size: .8rem; font-weight: 600; color: var(--primary-strong); text-decoration: none; margin-top: .3rem; border-radius: 6px; border-left: 2px solid transparent; transition: background .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toc-item:hover { background: var(--tint-1); }
+.toc-item.active { color: var(--primary-strong); border-left-color: var(--primary-light); background: var(--tint-1); }
+
+/* ═══════════════════════════════════════════════
+   5. KOMPONENTEN
+═══════════════════════════════════════════════ */
+/* Abschnittskopf */
+.section-header { display: flex; align-items: center; gap: .75rem; padding: 0 .25rem; margin-bottom: 1.25rem; }
+.section-icon { font-size: 1.8rem; flex-shrink: 0; }
+.section-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); line-height: 1.25; }
+.section-subtitle { font-size: .9rem; color: var(--muted); margin-top: .2rem; }
+
+/* Card: immer .card > [.card-head] + .card-body  (Padding sitzt in .card-body!) */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 1px 4px rgba(31,41,55,.07); margin-bottom: 1.25rem; overflow: hidden; }
+.card-head { padding: .875rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .6rem; background: var(--card-alt); }
+.card-title { font-size: .9rem; font-weight: 600; flex: 1; color: var(--primary-strong); }
+.card-body { padding: 1.25rem; }
+.card-body > * + *, .content-box > * + *, .highlight-box > * + * { margin-top: .75rem; }
+.card-body > .content-grid, .card-body > .tbl-wrap, .card-body > .diagram, .card-body > .gallery,
+.card-body > .highlight-box, .card-body > .tile-grid { margin-top: 1.25rem; }
+.card-body > :first-child { margin-top: 0; }
+.card-body > :last-child { margin-bottom: 0; }
+.card-body p, .content-box p, .highlight-box p { font-size: .92rem; line-height: 1.6; }
+.card-body ul, .card-body ol, .content-box ul, .content-box ol, .highlight-box ul, .highlight-box ol { padding-left: 1.3rem; font-size: .92rem; line-height: 1.6; }
+.card-body li + li, .content-box li + li, .highlight-box li + li { margin-top: .3rem; }
+.lead { font-weight: 600; color: var(--primary-strong); }
+.card h3, .content-box h3 { font-size: 1rem; font-weight: 700; color: var(--tone, var(--primary-strong)); display: flex; align-items: center; gap: .5rem; line-height: 1.35; }
+
+/* Grids */
+.content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin: 1.25rem 0; }
+.content-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.content-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.content-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.content-grid > .card { margin-bottom: 0; }
+.tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem; margin: 1.25rem 0; }
+
+/* Content-Box: kleine Kachel; Akzent über .tone-* (+ .edge-top) */
+.content-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem; box-shadow: var(--shadow-xs); border-left: 4px solid var(--tone, var(--border)); }
+.content-box.edge-top { border-left: 1px solid var(--border); border-top: 4px solid var(--tone, var(--border)); }
+.tone-orange { --tone: var(--c-orange); } .tone-red { --tone: var(--c-red); } .tone-blue { --tone: var(--c-blue); }
+.tone-green { --tone: var(--c-green); } .tone-purple { --tone: var(--c-purple); } .tone-sky { --tone: var(--c-sky); }
+.tone-brown { --tone: var(--c-brown); }
+
+/* Merksatz-Box (Standard = gelb); Titel IMMER mit .hb-title, nie über <strong> */
+.highlight-box { background: linear-gradient(135deg, var(--tint-1), var(--tint-2)); border: 2px solid var(--tint-border); border-radius: var(--radius-sm); padding: 1.1rem 1.25rem; color: var(--tint-text); }
+.highlight-box.is-danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+.highlight-box.is-ok     { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok-text); }
+.highlight-box.is-info   { background: linear-gradient(135deg, var(--info-bg-2), var(--info-bg)); border-color: var(--info-border); color: var(--info-text); }
+.hb-title { display: block; font-weight: 700; font-size: .95rem; }
+
+/* Pill: kurzer Hinweis am Ende einer Content-Box */
+.pill { display: block; font-size: .85rem; padding: .5rem .75rem; border-radius: 8px; background: var(--tint-1); color: var(--tint-text); }
+.pill.is-ok { background: var(--ok-bg); color: var(--ok-text); } .pill.is-info { background: var(--info-bg); color: var(--info-text); }
+.pill.is-danger { background: var(--danger-bg); color: var(--danger-text); } .pill.is-purple { background: var(--purple-bg); color: var(--purple-text); }
+
+/* Formel + Rechenbeispiel */
+.formula { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .92rem; line-height: 1.7; padding: .65rem .85rem; border-radius: 6px; background: var(--tint-1); color: var(--tint-text); }
+@supports (background: color-mix(in srgb, red 10%, white)) {
+  .formula { background: color-mix(in srgb, var(--tone, var(--primary)) 11%, var(--card)); color: color-mix(in srgb, var(--tone, var(--primary-strong)) 80%, var(--text)); }
+}
+.formula-legend { font-size: .82rem; color: var(--muted); }
+.example { border-left: 4px solid var(--primary-light); background: var(--card-alt); padding: .65rem .9rem; border-radius: 0 8px 8px 0; font-size: .9rem; }
+.example::before { content: 'Beispiel'; display: block; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--primary-strong); margin-bottom: .15rem; }
+
+/* Tabellen: <div class="tbl-wrap"><table class="tbl">  (td.c / th.c = zentriert, tr.hl = hervorgehoben) */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.tbl { width: 100%; border-collapse: collapse; font-size: .9rem; --th-bg-1: var(--tint-1); --th-bg-2: var(--tint-2); --th-text: var(--tint-text); --th-line: var(--tint-border); }
+.tbl.wide { min-width: 560px; }
+.tbl th { background: linear-gradient(135deg, var(--th-bg-1), var(--th-bg-2)); color: var(--th-text); border-bottom: 2px solid var(--th-line); text-align: left; padding: .7rem .75rem; font-weight: 700; }
+.tbl td { padding: .6rem .75rem; border-top: 1px solid var(--border); vertical-align: top; }
+.tbl tbody tr:first-child td { border-top: 0; }
+.tbl tbody tr:nth-child(even) td { background: var(--card-alt); }
+.tbl .c { text-align: center; }
+.tbl tr.hl td { background: var(--tint-1); font-weight: 600; }
+.tbl tr.danger td { background: var(--danger-bg); }
+.tbl.tone-blue  { --th-bg-1: var(--info-bg-2); --th-bg-2: var(--info-bg); --th-text: var(--info-text); --th-line: var(--info-border); }
+.tbl.tone-green { --th-bg-1: var(--ok-bg); --th-bg-2: var(--ok-bg); --th-text: var(--ok-text); --th-line: var(--ok-border); }
+.tbl.tone-red   { --th-bg-1: var(--danger-bg); --th-bg-2: var(--danger-bg); --th-text: var(--danger-text); --th-line: var(--danger-border); }
+
+/* Bilder aus dem Unterricht (+ Lightbox) */
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin: 1.25rem 0; }
+.gallery-item { border-radius: var(--radius); overflow: hidden; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: all var(--dur) var(--ease); }
+.gallery-item:hover { box-shadow: var(--shadow-md); transform: translateY(-4px); }
+.gallery-item img { width: 100%; height: auto; display: block; cursor: zoom-in; background: var(--card-alt); }
+.gallery-item-text { padding: .9rem 1rem; }
+.gallery-item-title { font-weight: 600; color: var(--primary-strong); font-size: .95rem; }
+.gallery-item-desc { font-size: .85rem; color: var(--muted); line-height: 1.5; margin-top: .2rem; }
+
+/* Diagramme: Inline-SVG auf heller „Papier“-Fläche (in beiden Modi lesbar) */
+.diagram { text-align: center; margin: 1.25rem 0; }
+.diagram svg { width: 100%; max-width: 560px; height: auto; border-radius: 8px; background: var(--paper); border: 1px solid var(--tint-border); }
+.diagram figcaption { font-size: .82rem; color: var(--muted); margin-top: .4rem; }
+
+/* Farbfelder (Farbcodes) */
+.swatch { background: var(--sw, #6b7280); color: #fff; border-radius: 8px; padding: .75rem; text-align: center; font-size: .85rem; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.swatch strong { display: block; font-size: .95rem; }
+
+/* Abschluss: Lernziele */
+.card.goals { background: linear-gradient(135deg, var(--tint-1), var(--tint-2)); border-color: var(--tint-border); color: var(--tint-text); }
+.goals h2 { font-size: 1.25rem; font-weight: 700; }
+.goals ul { padding-left: 1.4rem; line-height: 1.8; font-size: .95rem; }
+
+/* ═══════════════════════════════════════════════
+   6. LIGHTBOX + LERNMODUS (Karteikarten)
+═══════════════════════════════════════════════ */
+.lightbox { display: none; position: fixed; inset: 0; z-index: 800; background: rgba(0,0,0,.88); align-items: center; justify-content: center; cursor: zoom-out; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 95vw; max-height: 92vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+
+.learn-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(6px); padding: 1rem; }
+.learn-overlay.open { display: flex; }
+.learn-modal { background: var(--card); border: 1px solid var(--border); border-radius: 20px; width: min(760px, 100%); max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 32px 80px rgba(0,0,0,.25); animation: modal-in .22s var(--ease); }
+@keyframes modal-in { from { opacity: 0; transform: translateY(-14px) scale(.97); } to { opacity: 1; transform: none; } }
+.learn-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .75rem; background: linear-gradient(135deg, var(--tint-1), var(--tint-2)); }
+.learn-title { flex: 1; font-size: 1.05rem; font-weight: 700; color: var(--tint-text); }
+.learn-counter { font-size: .85rem; color: var(--tint-text); font-weight: 600; white-space: nowrap; }
+.learn-progress-bar { height: 4px; background: var(--border); }
+.learn-progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), var(--primary-light)); transition: width .3s; }
+.learn-body { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* Karte: Vorder- und Rückseite liegen im selben Grid-Feld → Höhe = höhere Seite (kein Abschneiden) */
+.learn-card-wrap { perspective: 1000px; }
+.learn-card { display: grid; min-height: 260px; position: relative; transform-style: preserve-3d; transition: transform .5s var(--ease); cursor: pointer; border-radius: 16px; }
+.learn-card.flipped { transform: rotateY(180deg); }
+.learn-card-front, .learn-card-back { grid-area: 1 / 1; position: relative; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 3rem 1.5rem 2.4rem; border: 2px solid var(--border); }
+.learn-card-front { background: linear-gradient(135deg, var(--paper), var(--card-alt)); border-color: var(--tint-border); }
+.learn-card-back { background: var(--ok-bg); border-color: var(--c-green); transform: rotateY(180deg); }
+.learn-card-question { font-size: 1.1rem; font-weight: 600; line-height: 1.5; }
+.learn-card-hint { font-size: .82rem; color: var(--muted); font-style: italic; margin-top: .75rem; }
+.learn-card-answer { font-size: 1rem; font-weight: 600; line-height: 1.55; color: var(--ok-text); }
+.learn-category { position: absolute; top: .75rem; left: .75rem; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; padding: .2rem .65rem; border-radius: 999px; background: var(--tint-1); color: var(--tint-text); }
+.learn-card-no { position: absolute; bottom: .75rem; right: .85rem; font-size: .78rem; color: var(--muted); }
+.learn-card-front .learn-card-question { color: #1f2937; }
+:root.dark .learn-card-front { background: var(--card-alt); }
+:root.dark .learn-card-front .learn-card-question { color: var(--text); }
+
+.learn-rate { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; visibility: hidden; }
+.learn-rate.show { visibility: visible; }
+.learn-rate-btn { flex: 1; min-width: 80px; max-width: 150px; padding: .65rem .75rem; border-radius: 10px; border: 1px solid transparent; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .15s; display: flex; flex-direction: column; align-items: center; gap: .2rem; }
+.learn-rate-btn:hover { transform: translateY(-2px); }
+.learn-rate-btn .rate-icon { font-size: 1.2rem; }
+.rate-easy { background: var(--ok-bg); color: var(--ok-text); border-color: var(--ok-border); }
+.rate-ok   { background: var(--tint-1); color: var(--tint-text); border-color: var(--tint-border); }
+.rate-hard { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+
+.learn-footer { padding: .85rem 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; background: var(--card-alt); }
+.learn-stat { font-size: .8rem; color: var(--muted); flex: 1; }
+.learn-stat strong { color: var(--text); }
+.learn-keys { font-size: .72rem; color: var(--muted); }
+
+.learn-result { text-align: center; padding: 2rem 1rem; }
+.learn-result-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+.learn-result h2 { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: .5rem; }
+.learn-result p { color: var(--muted); margin-bottom: 1.5rem; }
+.learn-result-bars { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; max-width: 400px; margin: 1.25rem auto; }
+.result-bar-item { background: var(--card); border-radius: 10px; padding: .75rem; border: 1px solid var(--border); }
+.rbi-num { font-size: 1.5rem; font-weight: 800; }
+.rbi-lbl { font-size: .75rem; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════
+   7. RESPONSIVE + BEWEGUNG
+═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .page-layout { display: block; padding: 0 1rem; }
+  .toc-sidebar { display: none; }
+  .toc-sidebar.open { display: block; position: fixed; left: 0; right: 0; width: auto; margin: 0; max-height: 65vh; padding: .75rem 1rem 1rem; background: var(--card); border-bottom: 1px solid var(--border); box-shadow: var(--shadow-md); z-index: 60; }
+  .btn-toc { display: inline-flex; }
+  .content-grid.cols-3, .content-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+  .hero { padding: 1.1rem 1.25rem 1rem; }
+  .hero h1 { font-size: 1.9rem; }
+  .h-icon { right: 1rem; }
+  .toolbar { padding: .45rem .75rem; gap: .5rem; }
+  .toolbar-label { display: none; }
+  .learn-keys { display: none; }
+}
+@media (max-width: 600px) {
+  .content-grid, .content-grid.cols-2, .content-grid.cols-3, .content-grid.cols-4 { grid-template-columns: 1fr; }
+  .section-title { font-size: 1.3rem; }
+  .card-body { padding: 1rem; }
+  .learn-body { padding: 1rem; }
+  .learn-header { padding: .85rem 1rem; }
+  .learn-footer { padding: .75rem 1rem; }
+  .learn-stat .lbl { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<div id="top-progress-bar"></div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Bildansicht"><img id="lightbox-img" src="" alt=""></div>
+
+<!-- ═════════ LERNMODUS (Karteikarten, Inhalt kommt aus window.FLASHCARDS) ═════════ -->
+<div class="learn-overlay" id="learn-overlay" role="dialog" aria-modal="true" aria-labelledby="learn-title">
+  <div class="learn-modal">
+    <div class="learn-header">
+      <span class="learn-title" id="learn-title">⚡ KÜRZEL Lernmodus</span>
+      <span class="learn-counter" id="learn-counter">1 / 1</span>
+      <button class="btn btn-secondary btn-sm" id="learn-close" type="button">✕ Schließen</button>
+    </div>
+    <div class="learn-progress-bar"><div class="learn-progress-fill" id="learn-progress-fill"></div></div>
+    <div class="learn-body" id="learn-body"></div>
+    <div class="learn-footer">
+      <span class="learn-stat" id="learn-stat"></span>
+      <span class="learn-keys">Leertaste: umdrehen · 1/2/3: bewerten · Esc: schließen</span>
+      <button class="btn btn-secondary btn-sm" id="learn-restart" type="button">🔄 Neustart</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════ KOPF ═════════ -->
+<header class="hero">
+  <div class="h-icon" aria-hidden="true">⚡</div>
+  <div class="h-content">
+    <div class="h-badge">🔧 Fachgebiet</div>
+    <h1>KÜRZEL — Thema der Lernseite</h1>
+    <p>Ein Satz, worum es auf dieser Seite geht</p>
+    <div class="h-motto"><strong>Merksatz zum Einstieg:</strong> ein prägnanter Leitgedanke</div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <span class="toolbar-label">KÜRZEL · Klasse</span>
+  <button class="btn btn-primary btn-sm" id="learn-btn" type="button">🎓 Lernmodus</button>
+  <button class="btn btn-secondary btn-sm btn-toc" id="toc-toggle" type="button" aria-expanded="false" aria-controls="toc">📑 Inhalt</button>
+  <button class="btn btn-secondary btn-sm btn-dm" id="dm-toggle" type="button" title="Dunkles Design" aria-label="Dunkles Design">🌙</button>
+</div>
+
+<div class="page-layout">
+  <!-- Inhaltsverzeichnis: wird per JS aus den <section id> erzeugt -->
+  <aside class="toc-sidebar" id="toc" aria-label="Inhaltsverzeichnis">
+    <div class="toc-head">Inhalte</div>
+    <nav id="toc-list"></nav>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ABSCHNITT 1 — zeigt: lead, content-grid + tone-Boxen, pill, formula, example, Merksatz
+         Aufbau jedes Abschnitts: <section id data-toc="Kurzname"> → .section-header → .card > .card-body
+         ══════════════════════════════════════════════════════════════ -->
+    <section id="demo-grundlagen" data-toc="Grundlagen" data-demo>
+      <div class="section-header">
+        <div class="section-icon">⚡</div>
+        <div>
+          <div class="section-title">Das Ohmsche Gesetz (DEMO)</div>
+          <div class="section-subtitle">Spannung, Strom und Widerstand hängen zusammen</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <p class="lead">Fette Einleitungszeile: Was ist das Thema, in einem Satz.</p>
+
+          <div class="content-grid cols-3">
+            <div class="content-box tone-orange">
+              <h3>⚡ Spannung U</h3>
+              <ul>
+                <li><strong>Einheit:</strong> Volt [V]</li>
+                <li>„Antrieb“ der Ladungsträger</li>
+                <li>Beispiel: Steckdose 230 V</li>
+              </ul>
+              <span class="pill">Wird <strong>parallel</strong> gemessen</span>
+            </div>
+            <div class="content-box tone-blue">
+              <h3>🌊 Stromstärke I</h3>
+              <ul>
+                <li><strong>Einheit:</strong> Ampere [A]</li>
+                <li>Ladung pro Zeit: I = Q / t</li>
+                <li>Fließt nur im geschlossenen Kreis</li>
+              </ul>
+              <span class="pill is-info">Wird in <strong>Reihe</strong> gemessen</span>
+            </div>
+            <div class="content-box tone-green">
+              <h3>🧱 Widerstand R</h3>
+              <ul>
+                <li><strong>Einheit:</strong> Ohm [Ω]</li>
+                <li>Hemmt den Stromfluss</li>
+                <li>Hängt von Material, Länge, Querschnitt ab</li>
+              </ul>
+              <span class="pill is-ok">Nur <strong>spannungsfrei</strong> messen</span>
+            </div>
+          </div>
+
+          <div class="content-grid cols-3">
+            <div class="content-box tone-orange">
+              <h3>Ohmsches Gesetz</h3>
+              <div class="formula">U = R · I</div>
+              <div class="formula-legend">U [V] · R [Ω] · I [A]</div>
+            </div>
+            <div class="content-box tone-blue">
+              <h3>Umgestellt</h3>
+              <div class="formula">I = U / R<br>R = U / I</div>
+              <div class="formula-legend">je nach gesuchter Größe</div>
+            </div>
+            <div class="content-box tone-green">
+              <h3>Leistung</h3>
+              <div class="formula">P = U · I<br>P = I² · R</div>
+              <div class="formula-legend">P [W] = Watt</div>
+            </div>
+          </div>
+
+          <div class="example">U = 12 V, R = 6 Ω → I = U / R = <strong>2 A</strong> → P = U · I = <strong>24 W</strong></div>
+
+          <div class="highlight-box">
+            <span class="hb-title">💡 Merksatz</span>
+            <p>Eine Aussage pro Merksatz-Box — am Ende jedes Abschnitts. Auch <strong>fette Begriffe</strong> im Fließtext bleiben mitten im Satz; nur der Titel bekommt die Klasse <code>hb-title</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ABSCHNITT 2 — zeigt: Tabelle (+ hl-Zeile), Vergleichstabelle, edge-top-Boxen, Hinweis-Varianten
+         ══════════════════════════════════════════════════════════════ -->
+    <section id="demo-tabellen" data-toc="Tabellen & Vergleich" data-demo>
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div>
+          <div class="section-title">Tabellen und Vergleiche (DEMO)</div>
+          <div class="section-subtitle">Messgrößen und Schaltungsarten im Überblick</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">📋 Messgrößen</span></div>
+        <div class="card-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Größe</th><th class="c">Zeichen</th><th class="c">Einheit</th><th>Messgerät</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Spannung</strong></td><td class="c">U</td><td class="c">V</td><td>Voltmeter (parallel)</td></tr>
+                <tr><td><strong>Stromstärke</strong></td><td class="c">I</td><td class="c">A</td><td>Amperemeter (in Reihe)</td></tr>
+                <tr class="hl"><td><strong>Widerstand</strong></td><td class="c">R</td><td class="c">Ω</td><td>Ohmmeter — nur spannungsfrei!</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="content-grid cols-2">
+            <div class="content-box edge-top tone-blue">
+              <h3>🔵 Reihenschaltung</h3>
+              <p>Strom überall <strong>gleich</strong>, Spannungen <strong>addieren</strong> sich.</p>
+              <span class="pill is-info">R<sub>ges</sub> = R₁ + R₂ + …</span>
+            </div>
+            <div class="content-box edge-top tone-green">
+              <h3>🟢 Parallelschaltung</h3>
+              <p>Spannung überall <strong>gleich</strong>, Ströme <strong>addieren</strong> sich.</p>
+              <span class="pill is-ok">1 / R<sub>ges</sub> = 1 / R₁ + 1 / R₂ + …</span>
+            </div>
+          </div>
+
+          <div class="tbl-wrap">
+            <table class="tbl tone-blue wide">
+              <thead><tr><th>Eigenschaft</th><th class="c">Reihe</th><th class="c">Parallel</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Strom</strong></td><td class="c">überall gleich</td><td class="c">teilt sich auf</td></tr>
+                <tr><td><strong>Spannung</strong></td><td class="c">teilt sich auf</td><td class="c">überall gleich</td></tr>
+                <tr><td><strong>Gesamtwiderstand</strong></td><td class="c">wird größer</td><td class="c">kleiner als der kleinste</td></tr>
+                <tr class="danger"><td><strong>Ausfall eines Verbrauchers</strong></td><td class="c">Kreis unterbrochen</td><td class="c">Rest läuft weiter</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="highlight-box is-danger">
+            <span class="hb-title">⚠️ Achtung (is-danger)</span>
+            <p>Für Warnungen und Sicherheitshinweise. Varianten: <code>is-danger</code>, <code>is-ok</code>, <code>is-info</code>.</p>
+          </div>
+          <div class="highlight-box is-ok">
+            <span class="hb-title">✅ Gut zu wissen (is-ok)</span>
+            <p>Für Bestätigungen, Standardlösungen, „so ist es richtig“.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ABSCHNITT 3 — zeigt: SVG-Diagramm (.diagram), Farbfelder, Zahlen-Liste, Grid aus Cards
+         ══════════════════════════════════════════════════════════════ -->
+    <section id="demo-diagramm" data-toc="Diagramm" data-demo>
+      <div class="section-header">
+        <div class="section-icon">📐</div>
+        <div>
+          <div class="section-title">Diagramme und Farbcodes (DEMO)</div>
+          <div class="section-subtitle">Inline-SVG auf heller Fläche, Farbfelder, Schrittfolgen</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <figure class="diagram">
+            <svg viewBox="0 0 480 200" role="img" aria-label="Stromkreis: Spannungsquelle 12 V und Widerstand 6 Ohm">
+              <defs><marker id="demo-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"/></marker></defs>
+              <!-- Leitungen -->
+              <path d="M110 92 V40 H380 V85 M380 125 V160 H110 V108" fill="none" stroke="#374151" stroke-width="2.5" stroke-linejoin="round"/>
+              <!-- Spannungsquelle: lange Platte = Plus -->
+              <line x1="92" y1="92" x2="128" y2="92" stroke="#374151" stroke-width="2.5"/>
+              <line x1="100" y1="108" x2="120" y2="108" stroke="#374151" stroke-width="6"/>
+              <text x="136" y="90" font-family="sans-serif" font-size="12" fill="#374151">+</text>
+              <text x="136" y="116" font-family="sans-serif" font-size="12" fill="#374151">−</text>
+              <text x="84" y="104" font-family="sans-serif" font-size="13" font-weight="700" fill="#92400e" text-anchor="end">U = 12 V</text>
+              <!-- Widerstand -->
+              <rect x="368" y="85" width="24" height="40" rx="2" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+              <text x="402" y="109" font-family="sans-serif" font-size="13" font-weight="700" fill="#92400e">R = 6 Ω</text>
+              <!-- Stromrichtung -->
+              <line x1="210" y1="24" x2="290" y2="24" stroke="#dc2626" stroke-width="2.5" marker-end="url(#demo-arrow)"/>
+              <text x="250" y="16" font-family="sans-serif" font-size="13" font-weight="700" fill="#dc2626" text-anchor="middle">I = 2 A</text>
+              <text x="245" y="184" font-family="sans-serif" font-size="11" fill="#6b7280" text-anchor="middle">Technische Stromrichtung: von Plus nach Minus</text>
+            </svg>
+            <figcaption>Abb.: Einfacher Stromkreis — SVG mit fest codierten, hellen Farben</figcaption>
+          </figure>
+
+          <div class="tile-grid">
+            <div class="swatch" style="--sw:#1d4ed8"><strong>Blau</strong>Neutralleiter (N)</div>
+            <div class="swatch" style="--sw:linear-gradient(90deg,#16a34a 50%,#f59e0b 50%)"><strong>Grün/Gelb</strong>Schutzleiter (PE)</div>
+            <div class="swatch" style="--sw:#78350f"><strong>Braun</strong>Außenleiter (L)</div>
+          </div>
+
+          <div class="content-grid cols-2">
+            <div class="card">
+              <div class="card-body">
+                <h3>📋 Vorgehen (Schritte)</h3>
+                <ol>
+                  <li><strong>Größen</strong> aus der Aufgabe herausschreiben</li>
+                  <li><strong>Formel</strong> wählen und umstellen</li>
+                  <li><strong>Einheiten</strong> prüfen, dann einsetzen</li>
+                  <li><strong>Ergebnis</strong> auf Plausibilität prüfen</li>
+                </ol>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <h3>ℹ️ Card im Grid</h3>
+                <p>Auch ganze Cards dürfen im <code>content-grid</code> stehen — dann immer mit <code>.card-body</code>, damit der Innenabstand stimmt.</p>
+                <span class="pill is-purple">Variante is-purple</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ABSCHNITT 4 — Unterrichtsmaterial (Fotos/Mindmaps) mit Lightbox.
+         Echte Bilder: <img src="img/datei.jpg" alt="…"> (Pfad relativ zur HTML-Datei) oder als data:-URI einbetten.
+         ══════════════════════════════════════════════════════════════ -->
+    <section id="demo-material" data-toc="Unterrichtsmaterial" data-demo>
+      <div class="section-header">
+        <div class="section-icon">🖼️</div>
+        <div>
+          <div class="section-title">Material aus dem Unterricht (DEMO)</div>
+          <div class="section-subtitle">Mindmaps und Arbeitsblätter — Klick vergrößert</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="gallery">
+            <div class="gallery-item">
+              <img alt="Platzhalter: Mindmap" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23fef3c7'/><rect x='20' y='20' width='760' height='460' fill='none' stroke='%23d97706' stroke-width='4' stroke-dasharray='14 10'/><text x='400' y='255' font-family='sans-serif' font-size='34' text-anchor='middle' fill='%2392400e'>Foto / Mindmap hier einfügen</text></svg>">
+              <div class="gallery-item-text">
+                <div class="gallery-item-title">Mindmap: Titel</div>
+                <div class="gallery-item-desc">Kurzbeschreibung des Bildes</div>
+              </div>
+            </div>
+            <div class="gallery-item">
+              <img alt="Platzhalter: Arbeitsblatt" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'><rect width='800' height='500' fill='%23dbeafe'/><rect x='20' y='20' width='760' height='460' fill='none' stroke='%232563eb' stroke-width='4' stroke-dasharray='14 10'/><text x='400' y='255' font-family='sans-serif' font-size='34' text-anchor='middle' fill='%231e40af'>Arbeitsblatt hier einfügen</text></svg>">
+              <div class="gallery-item-text">
+                <div class="gallery-item-title">Arbeitsauftrag</div>
+                <div class="gallery-item-desc">Aufgaben zur praktischen Anwendung</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         LETZTER Abschnitt: weitere Materialien (bleibt in jeder Seite)
+         ══════════════════════════════════════════════════════════════ -->
+    <section id="materialien" data-toc="Materialien">
+      <div class="section-header">
+        <div class="section-icon">📚</div>
+        <div>
+          <div class="section-title">Weitere Lernmaterialien</div>
+          <div class="section-subtitle">Zusätzliche Ressourcen und Dokumente</div>
+        </div>
+      </div>
+      <div class="card" data-demo><!-- Platzhalter: ausfüllen und data-demo entfernen — oder den ganzen Abschnitt löschen -->
+        <div class="card-head"><span class="card-title">📄 Titel des Dokuments</span></div>
+        <div class="card-body">
+          <p>Kurzbeschreibung: Herausgeber, Titel, Jahr.</p>
+          <p>Datei: <code>dateiname.pdf</code></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Abschluss: Lernziele (je Hauptthema ein Punkt; Section ohne id → nicht im TOC) -->
+    <section>
+      <div class="card goals" data-demo>
+        <div class="card-body">
+          <h2>✅ KÜRZEL-Lernziele</h2>
+          <ul>
+            <li><strong>Thema 1:</strong> Was man danach können soll</li>
+            <li><strong>Thema 2:</strong> Was man danach können soll</li>
+            <li><strong>Thema 3:</strong> Was man danach können soll</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═════════ KARTEIKARTEN ═════════
+     cat = Kurzname des Abschnitts · q = ganze Frage · a = Antwort, Zeilenumbruch mit \n, kein HTML, 2–7 Zeilen
+     Die Demo-Karten tragen demo: true — alle löschen/ersetzen (QA --final meldet Reste). -->
+<script>
+window.FLASHCARDS = [
+  { demo: true, cat: 'Grundlagen',  q: 'Wie lautet das Ohmsche Gesetz?', a: 'U = R · I\nU = Spannung [V], R = Widerstand [Ω], I = Stromstärke [A]\n→ Umgestellt: I = U / R bzw. R = U / I' },
+  { demo: true, cat: 'Grundlagen',  q: 'Wie berechnet man die elektrische Leistung?', a: 'P = U · I [W]\n→ Mit Ohm: P = I² · R = U² / R\nBeispiel: 12 V · 2 A = 24 W' },
+  { demo: true, cat: 'Messen',      q: 'Wie wird ein Amperemeter angeschlossen?', a: 'In Reihe zum Verbraucher (der Strom fließt durch das Gerät).\n→ Innenwiderstand möglichst klein' },
+  { demo: true, cat: 'Messen',      q: 'Wie wird ein Voltmeter angeschlossen?', a: 'Parallel zum Verbraucher.\n→ Innenwiderstand möglichst groß' },
+  { demo: true, cat: 'Schaltungen', q: 'Wie berechnet sich der Gesamtwiderstand bei einer Reihenschaltung?', a: 'R_ges = R₁ + R₂ + …\nStrom überall gleich, die Spannungen addieren sich.' },
+  { demo: true, cat: 'Schaltungen', q: 'Wie berechnet sich der Gesamtwiderstand bei einer Parallelschaltung?', a: '1 / R_ges = 1 / R₁ + 1 / R₂ + …\nSpannung überall gleich, die Ströme addieren sich.\n→ R_ges ist kleiner als der kleinste Einzelwiderstand' },
+];
+</script>
+
+<script>
+(() => {
+  'use strict';
+  const $  = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const root = document.documentElement;
+  const slug = root.dataset.slug || 'lernseite';
+  const store = {
+    get: k => { try { return localStorage.getItem(slug + '-' + k); } catch (e) { return null; } },
+    set: (k, v) => { try { localStorage.setItem(slug + '-' + k, v); } catch (e) {} },
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = s => esc(s).replace(/\n/g, '<br>');
+
+  /* ── Dark-Mode ─────────────────────────────────────────── */
+  const dm = $('#dm-toggle');
+  function setDark(on) {
+    root.classList.toggle('dark', on);
+    dm.textContent = on ? '☀️' : '🌙';
+    dm.title = on ? 'Helles Design' : 'Dunkles Design';
+    dm.setAttribute('aria-label', dm.title);
+  }
+  setDark(root.classList.contains('dark'));
+  dm.addEventListener('click', () => { const on = !root.classList.contains('dark'); setDark(on); store.set('dark', on ? '1' : '0'); });
+
+  /* ── Inhaltsverzeichnis + Scroll-Spy (aus dem DOM abgeleitet) ── */
+  const sections = $$('.main-content section[id]').filter(s => $('.section-header', s));
+  const tocBox = $('#toc'), tocList = $('#toc-list'), tocBtn = $('#toc-toggle'), toolbar = $('.toolbar');
+  sections.forEach(s => {
+    const a = document.createElement('a');
+    a.className = 'toc-item'; a.href = '#' + s.id; a.dataset.target = s.id;
+    const icon = ($('.section-icon', s) || {}).textContent;
+    a.textContent = (icon ? icon.trim() + ' ' : '') + (s.dataset.toc || $('.section-title', s).textContent.trim());
+    tocList.appendChild(a);
+  });
+
+  function toggleToc(open) {
+    open = open === undefined ? !tocBox.classList.contains('open') : open;
+    tocBox.classList.toggle('open', open);
+    tocBtn.setAttribute('aria-expanded', String(open));
+    if (open) tocBox.style.top = Math.max(0, toolbar.getBoundingClientRect().bottom) + 'px';
+  }
+  tocBtn.addEventListener('click', () => toggleToc());
+  tocList.addEventListener('click', e => { if (e.target.closest('.toc-item')) toggleToc(false); });
+
+  const bar = $('#top-progress-bar');
+  let ticking = false;
+  function onScroll() {
+    ticking = false;
+    const max = root.scrollHeight - root.clientHeight;
+    bar.style.width = (max > 0 ? Math.min(100, root.scrollTop / max * 100) : 0) + '%';
+    if (!sections.length) return;
+    const line = window.innerHeight * 0.3;
+    let current = sections[0];
+    for (const s of sections) if (s.getBoundingClientRect().top <= line) current = s;
+    if (max > 0 && root.scrollTop >= max - 2) current = sections[sections.length - 1];
+    $$('.toc-item').forEach(a => {
+      const on = a.dataset.target === current.id;
+      if (on === a.classList.contains('active')) return;
+      a.classList.toggle('active', on);
+      if (on && tocBox.scrollHeight > tocBox.clientHeight) {
+        if (a.offsetTop < tocBox.scrollTop) tocBox.scrollTop = a.offsetTop - 8;
+        else if (a.offsetTop + a.offsetHeight > tocBox.scrollTop + tocBox.clientHeight) tocBox.scrollTop = a.offsetTop + a.offsetHeight - tocBox.clientHeight + 8;
+      }
+    });
+  }
+  addEventListener('scroll', () => {
+    if (tocBox.classList.contains('open')) toggleToc(false);
+    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+  }, { passive: true });
+  addEventListener('resize', onScroll);
+  onScroll();
+
+  /* ── Lightbox ──────────────────────────────────────────── */
+  const lb = $('#lightbox'), lbImg = $('#lightbox-img');
+  document.addEventListener('click', e => {
+    const img = e.target.closest('.gallery-item img');
+    if (!img) return;
+    lbImg.src = img.currentSrc || img.src; lbImg.alt = img.alt || '';
+    lb.classList.add('open');
+  });
+  lb.addEventListener('click', () => lb.classList.remove('open'));
+
+  /* ── Lernmodus (Karteikarten) ──────────────────────────── */
+  const cards = Array.isArray(window.FLASHCARDS) ? window.FLASHCARDS : [];
+  const learnBtn = $('#learn-btn'), overlay = $('#learn-overlay'), body = $('#learn-body');
+  const counter = $('#learn-counter'), fill = $('#learn-progress-fill'), stat = $('#learn-stat');
+  if (!cards.length) learnBtn.hidden = true;
+  let st = null, lastFocus = null;
+
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const reset = () => { st = { idx: 0, flipped: false, easy: 0, ok: 0, hard: 0, order: shuffle(cards.map((_, i) => i)) }; };
+  const isOpen = () => overlay.classList.contains('open');
+
+  function openLearn() { lastFocus = document.activeElement; reset(); overlay.classList.add('open'); root.classList.add('learn-open'); render(); }
+  function closeLearn() { overlay.classList.remove('open'); root.classList.remove('learn-open'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function restart() { reset(); render(); }
+
+  function render() {
+    const total = cards.length, done = st.idx;
+    counter.textContent = Math.min(done + 1, total) + ' / ' + total;
+    fill.style.width = (done / total * 100) + '%';
+    stat.innerHTML = `✅ <strong>${st.easy}</strong><span class="lbl"> Leicht</span> &nbsp;•&nbsp; 🆗 <strong>${st.ok}</strong><span class="lbl"> OK</span> &nbsp;•&nbsp; ❌ <strong>${st.hard}</strong><span class="lbl"> Schwer</span>`;
+    if (done >= total) return showResult();
+    const c = cards[st.order[done]];
+    body.innerHTML = `
+      <div class="learn-card-wrap">
+        <div class="learn-card" id="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen">
+          <div class="learn-card-front">
+            <span class="learn-category">${esc(c.cat)}</span>
+            <div class="learn-card-question">${fmt(c.q)}</div>
+            <div class="learn-card-hint">👆 Klicken zum Aufdecken</div>
+            <span class="learn-card-no">Karte ${done + 1}/${total}</span>
+          </div>
+          <div class="learn-card-back">
+            <span class="learn-category">${esc(c.cat)}</span>
+            <div class="learn-card-answer">${fmt(c.a)}</div>
+            <span class="learn-card-no">Karte ${done + 1}/${total}</span>
+          </div>
+        </div>
+      </div>
+      <div class="learn-rate" id="learn-rate" aria-hidden="true">
+        <button class="learn-rate-btn rate-easy" type="button" data-rate="easy"><span class="rate-icon">😊</span>Leicht</button>
+        <button class="learn-rate-btn rate-ok"   type="button" data-rate="ok"><span class="rate-icon">🤔</span>OK</button>
+        <button class="learn-rate-btn rate-hard" type="button" data-rate="hard"><span class="rate-icon">😅</span>Schwer</button>
+      </div>`;
+    st.flipped = false;
+    $('#flip-card').focus({ preventScroll: true });
+  }
+
+  function flip() {
+    const card = $('#flip-card'); if (!card) return;
+    st.flipped = !st.flipped;
+    card.classList.toggle('flipped', st.flipped);
+    const rate = $('#learn-rate');
+    rate.classList.toggle('show', st.flipped);
+    rate.setAttribute('aria-hidden', String(!st.flipped));
+  }
+
+  function rate(level) {
+    if (!st.flipped) return;
+    st[level]++; st.idx++; render();
+  }
+
+  function showResult() {
+    const total = cards.length, pct = Math.round(st.easy / total * 100);
+    body.innerHTML = `
+      <div class="learn-result">
+        <div class="learn-result-icon">${pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '💪'}</div>
+        <h2>${pct >= 80 ? 'Sehr gut!' : pct >= 60 ? 'Gut gemacht!' : 'Weiter üben!'}</h2>
+        <p>Du hast alle ${total} Karteikarten durchgearbeitet.</p>
+        <div class="learn-result-bars">
+          <div class="result-bar-item"><div class="rbi-num" style="color:#16a34a">${st.easy}</div><div class="rbi-lbl">😊 Leicht</div></div>
+          <div class="result-bar-item"><div class="rbi-num" style="color:#ca8a04">${st.ok}</div><div class="rbi-lbl">🤔 OK</div></div>
+          <div class="result-bar-item"><div class="rbi-num" style="color:#dc2626">${st.hard}</div><div class="rbi-lbl">😅 Schwer</div></div>
+        </div>
+        <button class="btn btn-primary" type="button" data-action="restart">🔄 Nochmal üben</button>
+      </div>`;
+    fill.style.width = '100%';
+    counter.textContent = total + ' / ' + total + ' ✓';
+  }
+
+  learnBtn.addEventListener('click', openLearn);
+  $('#learn-close').addEventListener('click', closeLearn);
+  $('#learn-restart').addEventListener('click', restart);
+  body.addEventListener('click', e => {
+    const r = e.target.closest('[data-rate]');
+    if (r) return rate(r.dataset.rate);
+    if (e.target.closest('[data-action="restart"]')) return restart();
+    if (e.target.closest('#flip-card')) flip();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { lb.classList.remove('open'); if (isOpen()) closeLearn(); if (tocBox.classList.contains('open')) toggleToc(false); return; }
+    if (!isOpen()) return;
+    if ((e.key === ' ' || e.key === 'Enter') && !e.target.closest('button') && $('#flip-card')) { e.preventDefault(); flip(); }
+    else if (['1', '2', '3'].includes(e.key)) rate(['easy', 'ok', 'hard'][+e.key - 1]);
+  });
+})();
+</script>
+</body>
+</html>
