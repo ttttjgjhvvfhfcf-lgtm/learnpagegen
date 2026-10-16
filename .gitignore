@@ -1,0 +1,4 @@
+qa-out/
+node_modules/
+# erzeugte Einzeldatei-Kopien (tools/embed-images.py) — jederzeit neu erzeugbar
+*.eingebettet.html
